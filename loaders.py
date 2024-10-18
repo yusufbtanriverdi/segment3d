@@ -1,5 +1,5 @@
 # Ref: https://www.kaggle.com/code/killa92/3d-liver-segmentation-using-pytorch
-
+from tqdm import tqdm
 import json, os, torch, cv2, random
 import numpy as np
 import nibabel as nib
@@ -67,7 +67,7 @@ class CustomSegmentationDataset(Dataset):
         nii_im_data = self.normalize_image(nii_im_data)
         nii_gt_data[nii_gt_data > 1] = 1  # To avoid issues with cross-entropy loss
 
-        return torch.tensor(nii_im_data).float(), torch.tensor(nii_gt_data).long()
+        return nii_im_data.float(), nii_gt_data.long()
 
     def normalize_image(self, im): 
         """
@@ -144,7 +144,7 @@ class CustomSegmentationDataset(Dataset):
         
         return transformed_im, transformed_gt
 
-def create_dataloaders(root, transformations, batch_size, split=[0.9, 0.05, 0.05], num_workers=2):
+def create_dataloaders(root, transformations, batch_size, split=[0.9, 0.05, 0.05], num_workers=1):
     """
     Creates dataloaders for training, validation, and test datasets.
     
@@ -288,42 +288,26 @@ def save_animation(ds, image_ind=0):
     plt.close()  # Close the figure to free memory
 
 
-# Example usage
-root = "../datasets/liver3d/"
-# Define transformations for 3D images
-transformations = tio.Compose([
-    tio.Resize((256, 256, 256)),  # Resizing 3D volumes (depth, height, width)
-    tio.ToCanonical(),  # Ensure the image orientation is standard
-    tio.RescaleIntensity((0, 1)),  # Normalize intensities
-    tio.RandomFlip(axes=(0, 1, 2)),  # Randomly flip along depth, height, width
-    tio.ZNormalization()  # Z-normalization using mean and std for the whole volume
-])
+if __name__ == "__main__":
+    # Example usage
+    root = "../datasets/liver3d/"
+    # Define transformations for 3D images
+    transformations = tio.Compose([
+        tio.Resize((256, 256, 256)),  # Resizing 3D volumes (depth, height, width)
+        tio.ToCanonical(),  # Ensure the image orientation is standard
+        tio.RescaleIntensity((0, 1)),  # Normalize intensities
+        tio.RandomFlip(axes=(0, 1, 2)),  # Randomly flip along depth, height, width
+        tio.ZNormalization()  # Z-normalization using mean and std for the whole volume
+    ])
 
-train_dl, val_dl, test_dl, n_classes = create_dataloaders(root=root, transformations=transformations, batch_size=16)
+    train_dl, val_dl, test_dl, n_classes = create_dataloaders(root=root, transformations=transformations, batch_size=4)
 
-# Save the visualization
-save_visualization(train_dl.dataset, num_images=20)
+    # Save the visualization
+    # save_visualization(train_dl.dataset, num_images=20)
+    save_animation(train_dl.dataset)
 
-save_animation(train_dl.dataset)
-
-
-# Test the loaders
-print("Train -------------------------------->")
-for ind, batch in enumerate(train_dl):
-    X, y = batch
-    print(X.shape, y.shape)
-    pass
-
-print("Val   -------------------------------->")
-
-for ind, batch in enumerate(val_dl):
-    X, y = batch
-    print(X.shape, y.shape)
-    pass
-
-print("Test  -------------------------------->")
-
-for ind, batch in enumerate(test_dl):
-    X, y = batch
-    print(X.shape, y.shape)
-    pass
+    # Test the loaders
+    print("Train -------------------------------->")
+    for ind, batch in tqdm(enumerate(train_dl)):
+        X, y = batch
+        pass

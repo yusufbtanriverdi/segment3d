@@ -1,9 +1,0 @@
-matplotlib
-numpy
-pandas
-seaborn
-tqdm
-Pillow
-opencv-python
-nibabel
-torchio

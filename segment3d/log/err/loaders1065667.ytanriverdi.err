@@ -1,0 +1,4 @@
+/gpfs/home/ytanriverdi/segment3d/loaders.py:70: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  return torch.tensor(nii_im_data).float(), torch.tensor(nii_gt_data).long()
+/var/spool/slurmd/job1065667/slurm_script: line 71: 2182512 Killed                  python loaders.py
+slurmstepd: error: Detected 1 oom-kill event(s) in StepId=1065667.batch cgroup. Some of your processes may have been killed by the cgroup out-of-memory handler.
